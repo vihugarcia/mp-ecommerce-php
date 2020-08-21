@@ -14,8 +14,8 @@ else {
 
 $image = $protocol . $_SERVER['SERVER_NAME'] . $_POST['img'];
 
-MercadoPago\SDK::setIntegratorId("dev_24c65fb163bf11ea96500242ac130004");
 MercadoPago\SDK::setAccessToken('APP_USR-6317427424180639-042414-47e969706991d3a442922b0702a0da44-469485398');
+MercadoPago\SDK::setIntegratorId("dev_24c65fb163bf11ea96500242ac130004");
 
 // Crea un objeto de preferencia
 $preference = new MercadoPago\Preference();
@@ -38,6 +38,8 @@ $payer->address = array(
 
 // Crea un ítem en la preferencia
 $item = new MercadoPago\Item();
+$item->id = "1234";
+$item->currency_id = "ARS";
 $item->title = $_POST['title'];
 $item->description = 'Dispositivo móvil de Tienda e-commerce';
 $item->picture_url = $image;
@@ -52,6 +54,7 @@ $preference->back_urls = array(
     "failure" => $protocol . $_SERVER['SERVER_NAME'] . "/failure.php",
     "pending" => $protocol . $_SERVER['SERVER_NAME'] . "/pending.php"
 );
+$preference->auto_return = "approved";
 $preference->payment_methods = array(
     "excluded_payment_methods" => array(
         array("id" => "amex")
