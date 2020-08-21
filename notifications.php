@@ -20,7 +20,7 @@ switch($_POST["type"]) {
 
 file_put_contents(
     'payment.txt',
-    json_encode($_POST, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . PHP_EOL,
+    json_encode($_GET, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . PHP_EOL,
     FILE_APPEND
 );
 
