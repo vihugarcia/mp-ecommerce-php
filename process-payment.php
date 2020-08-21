@@ -1,81 +1,55 @@
-<?php
+<?php  
+	if (isset($_GET['status'])) {
+		switch ($_GET['status']) {
+			case 'success':
+				// INICIAMOS EL CURL
+				$request_url  = 'https://api.mercadopago.com/v1/payments/'.$_GET['collection_id'].'?access_token=APP_USR-6317427424180639-042414-47e969706991d3a442922b0702a0da44-469485398';
 
-require './vendor/autoload.php';
+				$curl = curl_init($request_url);
 
-if (isset($_SERVER['HTTPS']) &&
-    ($_SERVER['HTTPS'] == 'on' || $_SERVER['HTTPS'] == 1) ||
-    isset($_SERVER['HTTP_X_FORWARDED_PROTO']) &&
-    $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') {
-  $protocol = 'https://';
-}
-else {
-  $protocol = 'http://';
-}
+				// curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+				curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+				curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+				curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
 
-$image = $protocol . $_SERVER['SERVER_NAME'] . $_POST['img'];
+				# Send request.
+				$result = curl_exec($curl);
 
-MercadoPago\SDK::setAccessToken('APP_USR-6317427424180639-042414-47e969706991d3a442922b0702a0da44-469485398');
-MercadoPago\SDK::setIntegratorId("dev_24c65fb163bf11ea96500242ac130004");
+				curl_close($curl);
 
-// Crea un objeto de preferencia
-$preference = new MercadoPago\Preference();
+				if (!$result) {
+					echo 'Curl error: ' . curl_error($curl);
+				} else{
+					$message = '';
 
-$payer = new MercadoPago\Payer();
-$payer->name = "Lalo";
-$payer->surname = "Landa";
-$payer->email = "test_user_63274575@testuser.com";
-$payer->date_created = "2018-06-02T12:58:41.425-04:00";
-$payer->phone = array(
-    "area_code" => "11",
-    "number" => "22223333"
-);
+					$payment = json_decode($result);
 
-$payer->address = array(
-    "street_name" => False,
-    "street_number" => 123,
-    "zip_code" => "1111"
-);
+					$message .= '<strong>El pago ha sido exitoso!</strong><br>';
+					$message .= 'ID Método de pago: '.$payment->payment_method_id.'<br>';
+					$message .= 'Monto: '.$payment->transaction_amount.'<br>';
+					$message .= 'ID Orden: '.$payment->order->id.'<br>';
+					$message .= 'ID Pago: '.$payment->id.'<br>';
+				}
 
-// Crea un ítem en la preferencia
-$item = new MercadoPago\Item();
-$item->id = "1234";
-$item->currency_id = "ARS";
-$item->title = $_POST['title'];
-$item->description = 'Dispositivo móvil de Tienda e-commerce';
-$item->picture_url = $image;
-$item->quantity = 1;
-$item->unit_price = $_POST['price'];
+				break;
 
-$preference->payer = $payer;
-$preference->external_reference = "vihugarcia@gmail.com";
-$preference->items = array($item);
-$preference->back_urls = array(
-    "success" => $protocol . $_SERVER['SERVER_NAME'] . "/success.php",
-    "failure" => $protocol . $_SERVER['SERVER_NAME'] . "/failure.php",
-    "pending" => $protocol . $_SERVER['SERVER_NAME'] . "/pending.php"
-);
-$preference->auto_return = "approved";
-$preference->payment_methods = array(
-    "excluded_payment_methods" => array(
-        array("id" => "amex")
-    ),
-    "excluded_payment_types" => array(
-        array("id" => "atm")
-    ),
-    "installments" => 6
-);
-$preference->notification_url =  $protocol . $_SERVER['SERVER_NAME'] . "/notifications.php?source_news=webhooks";
-
-$preference->save();
+			case 'pending':
+				$message = 'El pago se encuentra pendiente';
+				break;
+			
+			case 'failure':
+				$message = 'El pago ha sido rechazado';
+				break;
+		}
+	}
 ?>
 
 <!doctype html>
 <html>
-  <head>
-  <script src="https://www.mercadopago.com/v2/security.js" view=""></script>
-    <title>Pagar</title>
+  <head>  
+    <title>Resultado del pago</title>
   </head>
   <body>
-    <a href="<?php echo $preference->init_point; ?>">Pagar la compra</a>
+    <?= $message ?>
   </body>
 </html>

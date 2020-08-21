@@ -1,33 +1,24 @@
-<?php
-header('HTTP/1.1 200 OK');
+<?php 
+	header('HTTP/1.1 200 OK');
 
-// require './vendor/autoload.php';
+	try{
+		// Get the data
+		$data = $_REQUEST;
 
-// MercadoPago\SDK::setAccessToken("APP_USR-6317427424180639-042414-47e969706991d3a442922b0702a0da44-469485398");
+		// Get data from webhooks json file
+		$json = file_get_contents('webhooks.json');
 
-// switch($_POST["type"]) {
-//     case "payment":
-//         $payment = MercadoPago\Payment.find_by_id($_POST["id"]);
-//         break;
-//     case "plan":
-//         $plan = MercadoPago\Plan.find_by_id($_POST["id"]);
-//         break;
-//     case "subscription":
-//         $plan = MercadoPago\Subscription.find_by_id($_POST["id"]);
-//         break;
-//     case "invoice":
-//         $plan = MercadoPago\Invoice.find_by_id($_POST["id"]);
-//         break;
-// }
+		// Converts json data into array
+		$array = json_decode($json, true);
 
-$fh = fopen("payment.txt", "w");
+		array_push($array, $data);
 
-if ($fh) {
-    fwrite($fh, json_encode($_POST));
-    fclose($fh);
-} else {
-    trigger_error("Unable to open file!");
-}
+		// Convert updated array to JSON
+		$new_json = json_encode($array);
 
-header('Content-Type: application/json');
-echo json_encode($_POST);
+		// write json data into webhooks json file
+	    file_put_contents('webhooks.json', $new_json);
+    } catch (Exception $e) {
+        error_log($e->getMessage(), 3, "error.log");
+    }
+?>
