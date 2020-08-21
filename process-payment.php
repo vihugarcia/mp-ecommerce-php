@@ -72,7 +72,7 @@ $preference->save();
 <!doctype html>
 <html>
   <head>
-  <script src="https://www.mercadopago.com/v2/security.js" view="item"></script>
+  <script src="https://www.mercadopago.com/v2/security.js" view=""></script>
     <title>Pagar</title>
   </head>
   <body>
